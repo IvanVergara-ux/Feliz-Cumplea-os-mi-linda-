@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feliz Cumpleaños vv💜</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            overflow-x: hidden;
+            background: linear-gradient(to bottom, #000000, #1a0033, #000000);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes ping {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+
+        /* Intro Screen */
+        .intro {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .intro-icons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 40px;
+        }
+
+        .icon-moon {
+            font-size: 48px;
+            animation: pulse 2s infinite;
+        }
+
+        .icon-star {
+            font-size: 32px;
+            animation: pulse 2s infinite 0.2s;
+        }
+
+        .icon-star-small {
+            font-size: 24px;
+            animation: pulse 2s infinite 0.4s;
+        }
+
+        h1 {
+            font-size: 36px;
+            color: #d8b4fe;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+        }
+
+        .intro p {
+            font-size: 18px;
+            color: #e9d5ff;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .intro .subtitle {
+            font-size: 14px;
+            color: #d8b4fe;
+            font-style: italic;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            background: #9333ea;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+            margin-top: 30px;
+        }
+
+        .btn:hover {
+            background: #a855f7;
+            transform: scale(1.05);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Game Screen */
+        .hud {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .hud-item {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hud-item span {
+            color: #d8b4fe;
+            font-weight: bold;
+        }
+
+        .scene-info {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+
+        .scene-info h2 {
+            font-size: 28px;
+            color: #d8b4fe;
+            margin-bottom: 10px;
+            text-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
+        }
+
+        .scene-info p {
+            color: #e9d5ff;
+            line-height: 1.6;
+        }
+
+        .game-canvas {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            min-height: 300px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stars-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .star-bg {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #d8b4fe;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .ground {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: rgba(88, 28, 135, 0.5);
+        }
+
+        .character {
+            position: absolute;
+            bottom: 40px;
+            transition: left 0.2s;
+        }
+
+        .player {
+            filter: drop-shadow(0 0 20px rgba(192, 132, 252, 0.6));
+        }
+
+        .player-body {
+            width: 40px;
+            height: 56px;
+            background: #c084fc;
+            border-radius: 20px 20px 0 0;
+            position: relative;
+        }
+
+        .player-eye {
+            width: 8px;
+            height: 8px;
+            background: black;
+            border-radius: 50%;
+            position: absolute;
+            top: 8px;
+        }
+
+        .player-eye.left { left: 8px; }
+        .player-eye.right { right: 8px; }
+
+        .piercing {
+            width: 6px;
+            height: 6px;
+            background: #fef08a;
+            border-radius: 50%;
+            position: absolute;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: pulse 1.5s infinite;
+            box-shadow: 0 0 8px rgba(253, 224, 71, 0.8);
+        }
+
+        .player-mouth {
+            width: 20px;
+            height: 10px;
+            background: #7e22ce;
+            border-radius: 0 0 10px 10px;
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .player-legs {
+            width: 40px;
+            height: 40px;
+            background: #c084fc;
+            border-radius: 0 0 10px 10px;
+        }
+
+        .npc-body {
+            width: 48px;
+            height: 64px;
+            background: #7e22ce;
+            border-radius: 24px 24px 0 0;
+            position: relative;
+            filter: drop-shadow(0 0 15px rgba(126, 34, 206, 0.5));
+        }
+
+        .npc-eye {
+            width: 8px;
+            height: 8px;
+            background: #d8b4fe;
+            border-radius: 50%;
+            position: absolute;
+            top: 8px;
+        }
+
+        .npc-eye.left { left: 12px; }
+        .npc-eye.right { right: 12px; }
+
+        .npc-mouth {
+            width: 24px;
+            height: 12px;
+            background: #c084fc;
+            border-radius: 0 0 12px 12px;
+            position: absolute;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .npc-legs {
+            width: 48px;
+            height: 48px;
+            background: #7e22ce;
+            border-radius: 0 0 12px 12px;
+        }
+
+        .collectible {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: bounce 2s infinite;
+        }
+
+        .collectible-star {
+            font-size: 40px;
+            color: #c084fc;
+            filter: drop-shadow(0 0 10px rgba(192, 132, 252, 0.8));
+        }
+
+        .collectible-ping {
+            position: absolute;
+            top: 0;
+            left: 0;
+            font-size: 40px;
+            color: #d8b4fe;
+            opacity: 0.4;
+            animation: ping 2s infinite;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .btn-control {
+            padding: 20px;
+            background: rgba(147, 51, 234, 0.8);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
+        }
+
+        .btn-control:hover {
+            background: #a855f7;
+        }
+
+        .btn-control:active {
+            background: #7e22ce;
+            transform: scale(0.95);
+        }
+
+        .btn-continue {
+            background: #9333ea;
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+        }
+
+        .message-box {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 25px;
+            border: 2px solid #c084fc;
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.5);
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .message-box .title {
+            color: #d8b4fe;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .message-box .text {
+            color: #e9d5ff;
+            font-style: italic;
+            line-height: 1.6;
+        }
+
+        /* Finale Screen */
+        .finale {
+            text-align: center;
+            padding: 40px 20px;
+            position: relative;
+        }
+
+        .finale-stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .finale-star {
+            position: absolute;
+            color: #c084fc;
+            animation: pulse 3s infinite;
+        }
+
+        .finale-content {
+            position: relative;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 40px;
+            border-radius: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .finale-icons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .finale h1 {
+            font-size: 32px;
+            color: #d8b4fe;
+            margin-bottom: 30px;
+            text-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
+        }
+
+        .finale p {
+            color: #e9d5ff;
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .finale .highlight {
+            color: #d8b4fe;
+            font-weight: bold;
+        }
+
+        .finale .italic {
+            color: #c084fc;
+            font-style: italic;
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 28px; }
+            .scene-info h2 { font-size: 22px; }
+            .btn { font-size: 16px; padding: 12px 30px; }
+            .controls { gap: 10px; }
+            .btn-control { padding: 15px; font-size: 14px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Intro Screen -->
+        <div id="introScreen" class="screen active">
+            <div class="intro">
+                <div class="intro-icons">
+                    <span class="icon-moon">🌙</span>
+                    <span class="icon-star">⭐</span>
+                    <span class="icon-star-small">✨</span>
+                </div>
+                
+                <h1>Noches Compartidas</h1>
+                
+                <p>Un mundo nocturno donde dos almas se encuentran en la quietud de la madrugada.</p>
+                
+                <p class="subtitle">Hoy es un dia especial, y quise hacerte un regalito especial a mi manera por tu cumpleaños, espero que te guste ^^.</p>
+                
+
+
+                <button class="btn" onclick="startGame()">Comenzar el Viaje</button>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="gameScreen" class="screen">
+            <div class="hud">
+                <div class="hud-item">
+                    <span>⭐</span>
+                    <span id="memories">0</span>
+                    <span>Recuerdos</span>
+                </div>
+                <div class="hud-item">
+                    <span>🌙</span>
+                    <span>Escena <span id="sceneNum">1</span>/5</span>
+                </div>
+            </div>
+
+            <div class="scene-info">
+                <h2 id="sceneTitle">Primera Noche</h2>
+                <p id="sceneDesc">La ciudad duerme. Tú no. Y descubres que no eres la única despierta...</p>
+            </div>
+
+            <div class="game-canvas">
+                <div class="stars-bg" id="starsBg"></div>
+                <div class="ground"></div>
+                
+                <div class="character" id="npc" style="left: 30%">
+                    <div class="npc-body">
+                        <div class="npc-eye left"></div>
+                        <div class="npc-eye right"></div>
+                        <div class="npc-mouth"></div>
+                    </div>
+                    <div class="npc-legs"></div>
+                </div>
+
+                <div class="character player" id="player" style="left: 50%">
+                    <div style="text-align: center; margin-bottom: 5px;">✨</div>
+                    <div class="player-body">
+                        <div class="player-eye left"></div>
+                        <div class="player-eye right"></div>
+                        <div class="piercing"></div>
+                        <div class="player-mouth"></div>
+                    </div>
+                    <div class="player-legs"></div>
+                </div>
+
+                <div class="collectible">
+                    <div class="collectible-star">⭐</div>
+                    <div class="collectible-ping">⭐</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn-control" onclick="movePlayer(-5)">← Izquierda</button>
+                <button class="btn-control btn-continue" onclick="nextScene()">Continuar →</button>
+                <button class="btn-control" onclick="movePlayer(5)">Derecha →</button>
+            </div>
+
+            <div id="messageBox" style="display: none;">
+                <div class="message-box">
+                    <div class="title">+ Recuerdo desbloqueado: <span id="memoryTitle"></span></div>
+                    <div class="text" id="messageText"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Finale Screen -->
+        <div id="finaleScreen" class="screen">
+            <div class="finale">
+                <div class="finale-stars" id="finaleStars"></div>
+                
+                <div class="finale-content">
+                    <div class="finale-icons">
+                        <span style="font-size: 40px; animation: pulse 2s infinite;">✨</span>
+                        <span style="font-size: 48px; animation: pulse 2s infinite 0.2s;">💜</span>
+                        <span style="font-size: 40px; animation: pulse 2s infinite 0.4s;">✨</span>
+                    </div>
+                    
+                    <h1>Feliz cumpleaños mi reina🎂💜</h1>
+                    
+                    <p>Hoy cumples 17 años, y aunque el mundo vaya muy rapido, quiero que recuerdes algo: no todo en la vida tiene que correr. Las cosas buenas se toman su tiempo… como tú.</p>
+                    
+                    <p>Gracias por las charlas que se alargan sin darnos cuenta, por las madrugadas que llegan solas, por esa química que no se fuerza y simplemente pasa. Gracias por ser tú, incluso en los días en que no intentas ser nada.</p>
+                    
+                    <p class="highlight">Eres una persona increíble, y pase lo que pase más adelante, quiero que sepas que tu lugar en mi aprecio no depende del futuro, sino de lo que ya eres.</p>
+                    
+                    <p class="italic">Ojalá este nuevo año te regale calma, tranquilidad, sueños que no pesen y noches bonitas que se queden contigo. Quiero que recuerdes todos los dias lo valiosa que eres, Gracias por existir mi linda, Espero que te haya gustado esto que hice y deseo que tengas un hermoso dia asi como tú. TQM 🎂💜.</p>
+                    
+                    <div style="margin: 30px 0; font-size: 32px;">
+                        🌙✨
+                    </div>
+                    
+                    <button class="btn" onclick="restart()">Volver a la noche ✨</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const scenes = [
+            {
+                title: "Primera Noche",
+                desc: "La ciudad duerme. Tú no. Y descubres que no eres la única despierta...",
+                memory: "Una nueva madrugada comienza",
+                message: "Las mejores conversaciones pasan cuando el mundo duerme."
+            },
+            {
+                title: "Detalles",
+                desc: "Caminas por las calles vacías. Alguien nota algo que nadie más había mencionado...",
+                memory: "Piercings",
+                message: "La primera vez que me mandaste una foto, me encantó el pircing, me pareció especial, distinto… como tú, que tienes esa forma única de brillar sin intentarlo."
+            },
+            {
+                title: "Conexión Inesperada",
+                desc: "Algunas químicas no se explican, simplemente suceden en las noches silenciosas.",
+                memory: "Risas de madrugada",
+                message: "Tu forma de ser hace que la noche se sienta menos oscura y mucho más divertidas."
+            },
+            {
+                title: "Descubrimiento",
+                desc: "El Perfil transmitia cosas...",
+                memory: "La verdad",
+                message: "Si te digo que no esperaba tal conexion y la buena relación que tenemos, mentiria. Ya te lo he dicho pero no se como sentia que nos llevariamos bien, no me arrepiento de nada, te agradezco por todos esos dias que me alegras los dias sin tu saberlo "
+            },
+            {
+                title: "Descanso Nocturno",
+                desc: "Incluso las almas nocturnas necesitan descansar. Dormir es un superpoder.",
+                memory: "Sueños morados",
+                message: "No todo llega rápido. Algunas cosas valen la pena esperar lo que sea necesario."
+            }
+        ];
+
+        let currentScene = 0;
+        let memories = 0;
+        let playerPos = 50;
+        let npcPos = 30;
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function startGame() {
+            showScreen('gameScreen');
+            createStars();
+            updateNPCPosition();
+        }
+
+        function createStars() {
+            const starsBg = document.getElementById('starsBg');
+            starsBg.innerHTML = '';
+            for (let i = 0; i < 15; i++) {
+                const star = document.createElement('div');
+                star.className = 'star-bg';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 2 + 's';
+                starsBg.appendChild(star);
+            }
+        }
+
+        function movePlayer(delta) {
+            playerPos = Math.max(10, Math.min(90, playerPos + delta));
+            document.getElementById('player').style.left = playerPos + '%';
+            updateNPCPosition();
+        }
+
+        function updateNPCPosition() {
+            const interval = setInterval(() => {
+                const target = playerPos - 20;
+                if (Math.abs(npcPos - target) < 2) {
+                    npcPos = target;
+                    clearInterval(interval);
+                } else {
+                    npcPos += (target - npcPos) * 0.1;
+                }
+                document.getElementById('npc').style.left = npcPos + '%';
+            }, 50);
+        }
+
+        function nextScene() {
+            showMessage();
+            memories++;
+            document.getElementById('memories').textContent = memories;
+            
+            setTimeout(() => {
+                if (currentScene < scenes.length - 1) {
+                    currentScene++;
+                    updateScene();
+                } else {
+                    showFinale();
+                }
+            }, 10000);
+        }
+
+        function updateScene() {
+            const scene = scenes[currentScene];
+            document.getElementById('sceneNum').textContent = currentScene + 1;
+            document.getElementById('sceneTitle').textContent = scene.title;
+            document.getElementById('sceneDesc').textContent = scene.desc;
+            document.getElementById('messageBox').style.display = 'none';
+        }
+
+        function showMessage() {
+            const scene = scenes[currentScene];
+            document.getElementById('memoryTitle').textContent = scene.memory;
+            document.getElementById('messageText').textContent = '"' + scene.message + '"';
+            document.getElementById('messageBox').style.display = 'block';
+        }
+
+        function showFinale() {
+            showScreen('finaleScreen');
+            createFinaleStars();
+        }
+
+        function createFinaleStars() {
+            const finaleStars = document.getElementById('finaleStars');
+            finaleStars.innerHTML = '';
+            for (let i = 0; i < 30; i++) {
+                const star = document.createElement('div');
+                star.className = 'finale-star';
+                star.textContent = '⭐';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.fontSize = (Math.random() * 12 + 8) + 'px';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                finaleStars.appendChild(star);
+            }
+        }
+
+        function restart() {
+            currentScene = 0;
+            memories = 0;
+            playerPos = 50;
+            npcPos = 30;
+            document.getElementById('memories').textContent = '0';
+            updateScene();
+            showScreen('introScreen');
+        }
+    </script>
+</body>
+</html>
